@@ -22,69 +22,83 @@ Use this skill when:
 
 ## Process Overview
 
-1. Search for unreviewed Airtable bot messages in `#auto-management` from the last 14 days only
-2. Analyze each message and categorize required actions
-3. Generate comprehensive summary report
-4. Wait for user confirmation
-5. Execute all actions (send PM messages, add emojis, post thread links)
+1. Search for unreviewed Airtable bot messages in `#auto-management` from the last 14 days only using a sub-agent (to preserve top level agent context)
+2. Process messages in batches of up to 10 at a time using sub-agents
+3. For each batch: analyze messages in parallel (using sub-agents for all MCP calls)
+4. Generate summary report for the batch
+5. Wait for user confirmation for batch actions
+6. Execute confirmed actions (send PM messages, add emojis, post thread links)
+7. Move to next batch and repeat until all messages are processed
 
 **Critical: Always get confirmation before sending any Slack messages.**
+**Critical: All MCP calls (Slack, Airtable) must be made in sub-agents to manage context better.**
 
 ## Step 1: Message Discovery
 
 Search `#auto-management` (C03MBDE9CM8) for bot messages from Airtable bot (U03E50KUNN5) without :eyes: emoji.
 
+**IMPORTANT: Calculate the date for 10 days ago** from today's date and use it in the search queries. For example, if today is 2025-11-20, use `after:2025-11-10`.
+
 Use these Slack searches (within last 10 days):
 
 ```
-1. Article issues: in:#auto-management from:@Airtable "The article" -has::eyes:
-2. Draft due dates: in:#auto-management from:@Airtable "The draft" -has::eyes:
-3. Outline due dates: in:#auto-management from:@Airtable "The outline" -has::eyes:
+1. Article issues: in:#auto-management from:@Airtable "The article" -has::eyes: after:[DATE]
+2. Draft due dates: in:#auto-management from:@Airtable "The draft" -has::eyes: after:[DATE]
+3. Outline due dates: in:#auto-management from:@Airtable "The outline" -has::eyes: after:[DATE]
 ```
+
+Replace `[DATE]` with the calculated date (YYYY-MM-DD format).
 
 If all searches return no results, exit - nothing to review.
 
 ## Step 2: Batch Processing & Analysis
 
-For each message found:
+**Process messages in batches of up to 10 at a time.**
 
-### 2.1 Extract Information
+For each batch of up to 10 messages:
 
-- Pull Airtable link and review the record
-- Identify two-letter project code (e.g., "The article ARTICLE for PROJECT")
-- Find corresponding `#PROJECT-content-development` channel (lowercase)
-- Get Project Manager's Slack ID from Airtable field "Project Manager's Slack ID (from Projects)"
+### 2.1 Parallel Message Analysis (Using Sub-Agents)
 
-### 2.2 Check for Resolution
+**Create a sub-agent for each message in the batch (up to 10 parallel sub-agents).**
 
-- Look for project updates within last 7 days in content development channel
-- Determine if the SPECIFIC PROBLEM is RESOLVED (not just acknowledged)
+Each sub-agent should:
 
-### 2.3 Categorize Action
+1. **Extract Information** (using MCP tools in sub-agent):
+   - Pull Airtable link and review the record (use Airtable MCP tool)
+   - Identify two-letter project code (e.g., "The article ARTICLE for PROJECT")
+   - Find corresponding `#PROJECT-content-development` channel (lowercase)
+   - Get Project Manager's Slack ID from Airtable field "Project Manager's Slack ID (from Projects)" (use Airtable MCP tool)
 
-**RESOLVED**:
+2. **Check for Resolution** (using MCP tools in sub-agent):
+   - Look for project updates within last 7 days in content development channel (use Slack MCP tool)
+   - Determine if the SPECIFIC PROBLEM is RESOLVED (not just acknowledged)
 
-- Evidence shows specific issue is fixed
-- Action: Add :eyes: and :white_check_mark: emojis
+3. **Categorize Action**:
 
-**NEEDS PM MESSAGE**:
+   **RESOLVED**:
+   - Evidence shows specific issue is fixed
+   - Action: Add :eyes: and :white_check_mark: emojis
 
-- No evidence of resolution, PM action required
-- Action: Send PM message + add :eyes: and :hourglass_flowing_sand: emojis + post link in thread
+   **NEEDS PM MESSAGE**:
+   - No evidence of resolution, PM action required
+   - Action: Send PM message + add :eyes: and :hourglass_flowing_sand: emojis + post link in thread
 
-**SKIP (Monday only)**:
+   **SKIP (Monday only)**:
+   - 3-day overdue messages
+   - Action: None (see Monday Special Handling section)
 
-- 3-day overdue messages
-- Action: None (see Monday Special Handling section)
+4. **Return Results**: Each sub-agent returns its analysis and recommended actions
 
-## Step 3: Summary Report
+**Important**: All Slack and Airtable MCP tool calls must be made within the sub-agents, not in the main agent context.
 
-Provide comprehensive summary before taking action:
+## Step 3: Batch Summary Report
+
+After processing each batch (up to 10 messages), provide comprehensive summary before taking action:
 
 ```
-AUTO-MANAGEMENT BATCH REVIEW SUMMARY:
+BATCH X OF Y - AUTO-MANAGEMENT REVIEW SUMMARY:
 Date: [Date]
-Total Messages Found: X
+Messages in This Batch: X
 
 RESOLVED ACTIONS (will add :eyes: and :white_check_mark:):
 - [Article Title] - [Project] - [Issue resolved]
@@ -95,29 +109,31 @@ PM MESSAGES TO SEND:
    Message: [@PM Name] [specific action needed for article]
    Auto-Management Thread: [message link]
 
-2. Channel: #[project]-content-development  
+2. Channel: #[project]-content-development
    Message: [@PM Name] [specific action needed for article]
    Auto-Management Thread: [message link]
 
 SKIPPED (Monday 3-day overdue):
 - [Article Title] - [Project] - [Reason]
 
-SUMMARY:
+BATCH SUMMARY:
 - Resolved: X messages
-- PM Messages: X messages  
+- PM Messages: X messages
 - Skipped: X messages
 - Total Actions: X
 ```
 
-## Step 4: Confirmation & Execution
+## Step 4: Batch Confirmation & Execution
 
-**Wait for user confirmation**, then execute all actions:
+**Wait for user confirmation for this batch**, then execute all actions for this batch:
 
-1. **Send PM Messages**: Post each message to specified content development channel
+1. **Send PM Messages**: Post each message to specified content development channel (use Slack MCP tool in sub-agents)
 2. **Update Auto-Management**:
-    - For resolved items: Add :eyes: and :white_check_mark:
-    - For PM messages sent: Add :eyes: and :hourglass_flowing_sand:
-3. **Post Thread Links**: After each PM message, post the message link in the auto-management thread
+    - For resolved items: Add :eyes: and :white_check_mark: (use Slack MCP tool in sub-agents)
+    - For PM messages sent: Add :eyes: and :hourglass_flowing_sand: (use Slack MCP tool in sub-agents)
+3. **Post Thread Links**: After each PM message, post the message link in the auto-management thread (use Slack MCP tool in sub-agents)
+
+**After completing this batch, move to the next batch of up to 10 messages and repeat Steps 2-4 until all messages are processed.**
 
 ## Monday Special Handling
 
@@ -174,8 +190,10 @@ Xhelal Likaj peer reviews his own articles. Any messages about his articles not 
 
 ## Execution Notes
 
-- **Batch Processing**: Collect all recommendations before taking action
-- **Single Confirmation**: Get approval for all actions at once
-- **Efficient Execution**: Send all messages and update all emojis in sequence
-- **Context Management**: Process efficiently to avoid context window overflow
+- **Batch Processing**: Process up to 10 messages per batch, get confirmation, execute, then move to next batch
+- **Sub-Agent MCP Calls**: All Slack and Airtable MCP tool calls must be made in sub-agents to manage context better
+- **Parallel Analysis**: Process up to 10 messages in parallel within each batch using sub-agents
+- **Per-Batch Confirmation**: Get approval for each batch's actions before executing
+- **Efficient Execution**: Send all messages and update all emojis in sequence (using sub-agents for MCP calls)
+- **Context Management**: Using sub-agents for MCP calls prevents context window overflow
 - **PM Slack ID Translation**: Use proper Slack mention format for all PMs

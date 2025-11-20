@@ -23,20 +23,25 @@ Use this skill when:
 
 ## Process Overview
 
-Search for Airtable bot messages from the last 14 days in `#auto-management` (C03MBDE9CM8) that have:
+1. Search for Airtable bot messages from the last 14 days in `#auto-management` (C03MBDE9CM8) that have:
+   - ✅ :eyes: and :hourglass_flowing_sand: emojis (reviewed and acted upon)
+   - ❌ NO :white_check_mark: emoji (not yet marked complete)
+2. Process messages in batches of up to 10 at a time using sub-agents
+3. For each batch: analyze messages in parallel (using sub-agents for all MCP calls)
+4. Generate summary report for the batch
+5. Wait for user confirmation for batch actions
+6. Execute confirmed actions (mark resolved messages)
+7. Move to next batch and repeat until all messages are processed
 
-- ✅ :eyes: and :hourglass_flowing_sand: emojis (reviewed and acted upon)
-- ❌ NO :white_check_mark: emoji (not yet marked complete)
-
-**Critical: Mark messages as resolved IMMEDIATELY when confirmed, then move to next message. Do not batch.**
+**Critical: All MCP calls (Slack, Airtable) must be made in sub-agents to manage context better.**
 
 ## Step 1: Search for Candidate Messages
 
-Use Slack search to find messages with the required emoji pattern:
+Use Slack search (via MCP tool in sub-agent) to find messages with the required emoji pattern:
 
 ```
 Search Query: "in:#auto-management has::eyes: has::hourglass_flowing_sand: after:<14 days ago>"
-Count: 20
+Count: 100 (to get all candidates, then process in batches)
 Sort: timestamp (newest first)
 ```
 
@@ -49,54 +54,56 @@ Filter results to identify messages that:
 
 If no results, exit - nothing to review.
 
-## Step 2: Process Each Message Individually
+**Note**: Collect all candidate messages first, then process them in batches of up to 10.
 
-**IMPORTANT: Process one message at a time. Mark as resolved immediately when confirmed before moving to the next.**
+## Step 2: Batch Processing & Analysis
 
-For each qualifying message:
+**Process messages in batches of up to 10 at a time.**
 
-### 2.1 Review the Original Issue
+For each batch of up to 10 messages:
 
-- Note article title and project code
-- Identify the specific issue flagged (draft overdue, needs peer reviewer, waiting on author)
+### 2.1 Parallel Message Analysis (Using Sub-Agents)
 
-### 2.2 Check Response Thread
+**Create a sub-agent for each message in the batch (up to 10 parallel sub-agents).**
 
-- Look in the thread of the auto-management message
-- Find the message posted to PM's content development channel
-- Note what action was requested
+Each sub-agent should:
 
-### 2.3 Verify PM Follow-Up
+1. **Review the Original Issue** (using MCP tools in sub-agent):
+   - Note article title and project code
+   - Identify the specific issue flagged (draft overdue, needs peer reviewer, waiting on author)
 
-Check the project's `#[project]-content-development` channel for resolution evidence within last 7 days:
+2. **Check Response Thread** (using MCP tools in sub-agent):
+   - Look in the thread of the auto-management message (use Slack MCP tool)
+   - Find the message posted to PM's content development channel
+   - Note what action was requested
 
-- "Draft submitted" for overdue drafts
-- "Peer reviewer assigned: [name]" for missing peer reviewers
-- "Author provided updates" for pending author work
-- Status updates showing progress on flagged issue
+3. **Verify PM Follow-Up** (using MCP tools in sub-agent):
+   - Check the project's `#[project]-content-development` channel for resolution evidence within last 7 days (use Slack MCP tool):
+     - "Draft submitted" for overdue drafts
+     - "Peer reviewer assigned: [name]" for missing peer reviewers
+     - "Author provided updates" for pending author work
+     - Status updates showing progress on flagged issue
 
-### 2.4 Verify in Airtable
+4. **Verify in Airtable** (using MCP tools in sub-agent):
+   - Extract Airtable link from auto-management message
+   - Use Airtable MCP tool to check the record
+   - Verify if the issue is resolved:
+     - Status field changes
+     - Assignee updates for peer reviewers
+     - Date field updates for submissions
+     - Notes indicating resolution
 
-- Extract Airtable link from auto-management message
-- Use Airtable MCP tool to check the record
-- Verify if the issue is resolved:
-    - Status field changes
-    - Assignee updates for peer reviewers
-    - Date field updates for submissions
-    - Notes indicating resolution
+5. **Decision**:
 
-### 2.5 Decision & Immediate Action
+   **If RESOLVED:**
+   - Action: Add :white_check_mark: emoji and remove :hourglass_flowing_sand: emoji
 
-**If RESOLVED:**
+   **If UNRESOLVED:**
+   - Action: Leave message unmarked (no additional emojis)
 
-1. Immediately add :white_check_mark: emoji to the message
-2. Immediately remove :hourglass_flowing_sand: emoji from the message
-3. Move to next message
+6. **Return Results**: Each sub-agent returns its analysis and recommended actions
 
-**If UNRESOLVED:**
-
-1. Leave message unmarked (no additional emojis)
-2. Move to next message
+**Important**: All Slack and Airtable MCP tool calls must be made within the sub-agents, not in the main agent context.
 
 ## Resolution Evidence Examples
 
@@ -120,22 +127,62 @@ Check the project's `#[project]-content-development` channel for resolution evid
 - Check for emoji variations
 - Verify channel and user IDs
 
+## Step 3: Batch Summary Report
+
+After processing each batch (up to 10 messages), provide comprehensive summary before taking action:
+
+```
+BATCH X OF Y - AUTO-MANAGEMENT FOLLOW-UP SUMMARY:
+Date: [Date]
+Messages in This Batch: X
+
+RESOLVED ACTIONS (will add :white_check_mark: and remove :hourglass_flowing_sand:):
+- [Article Title] - [Project] - [Issue resolved]
+- [Article Title] - [Project] - [Issue resolved]
+
+UNRESOLVED (no action):
+- [Article Title] - [Project] - [Issue still pending]
+
+BATCH SUMMARY:
+- Resolved: X messages
+- Unresolved: X messages
+- Total Actions: X
+```
+
+## Step 4: Batch Confirmation & Execution
+
+**Wait for user confirmation for this batch**, then execute all actions for this batch:
+
+1. **Mark Resolved Messages**: Add :white_check_mark: emoji and remove :hourglass_flowing_sand: emoji (use Slack MCP tool in sub-agents)
+2. **Leave Unresolved Messages**: No action needed
+
+**After completing this batch, move to the next batch of up to 10 messages and repeat Steps 2-4 until all messages are processed.**
+
 ## Key Principles
 
-1. **Progressive Processing**: Mark resolved messages immediately, don't batch
-2. **Specific Resolution**: Look for evidence the SPECIFIC problem was addressed, not just PM awareness
-3. **No New Messages**: This is purely tracking/completion - don't send new PM messages
-4. **No Approval Needed**: Mark messages as complete without asking for permission
-5. **Move Quickly**: As soon as resolution evidence is found, mark and move on
+1. **Batch Processing**: Process up to 10 messages per batch, get confirmation, execute, then move to next batch
+2. **Sub-Agent MCP Calls**: All Slack and Airtable MCP tool calls must be made in sub-agents to manage context better
+3. **Parallel Analysis**: Process up to 10 messages in parallel within each batch using sub-agents
+4. **Per-Batch Confirmation**: Get approval for each batch's actions before executing
+5. **Specific Resolution**: Look for evidence the SPECIFIC problem was addressed, not just PM awareness
+6. **No New Messages**: This is purely tracking/completion - don't send new PM messages
+7. **Context Management**: Using sub-agents for MCP calls prevents context window overflow
 
 ## Example Workflow
 
 ```
-Message 1: Review → Evidence found in Airtable → Mark complete immediately → Continue
-Message 2: Review → No evidence → Skip → Continue  
-Message 3: Review → PM posted update in channel → Mark complete immediately → Continue
-Message 4: Review → Still unresolved → Skip → Continue
-...
+Batch 1 (Messages 1-10):
+  - Create 10 sub-agents in parallel
+  - Each sub-agent analyzes one message using MCP tools
+  - Collect results: 7 resolved, 3 unresolved
+  - Show summary to user
+  - Get confirmation
+  - Execute: Mark 7 messages as complete
+  - Move to Batch 2
+
+Batch 2 (Messages 11-20):
+  - Create 10 sub-agents in parallel
+  - Repeat process...
 ```
 
 ## Exception: Xhelal Likaj
