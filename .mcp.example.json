@@ -1,0 +1,35 @@
+{
+  "mcpServers": {
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
+    "slack": {
+      "command": "node",
+      "args": [
+        "/workspace/.nvm/versions/node/v24.11.1/lib/node_modules/@modelcontextprotocol/server-slack/dist/index.js"
+      ],
+      "env": {
+        "SLACK_BOT_TOKEN": "xoxp-*",
+        "SLACK_TEAM_ID": "T*",
+        "DEFAULT_LIMIT": "10",
+        "INCLUDE_REACTIONS": "false",
+        "INCLUDE_FILES": "false",
+        "INCLUDE_BLOCKS": "false",
+        "TEXT_ONLY_MODE": "true"
+      }
+    },
+    "airtable": {
+      "command": "node",
+      "args": [
+        "/workspace/.nvm/versions/node/v24.11.1/lib/node_modules/airtable-mcp-server/dist/index.js"
+      ],
+      "env": {
+        "AIRTABLE_API_KEY": "pat*"
+      }
+    }
+  }
+}
