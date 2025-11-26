@@ -160,9 +160,9 @@ BATCH SUMMARY:
 - Total Actions: X
 ```
 
-## Step 4: Batch Confirmation & Execution
+## Step 4: Batch Execution
 
-**Wait for user confirmation for this batch**, then execute all actions for this batch:
+Execute all actions for this batch:
 
 1. **Mark Resolved Messages**: Add :white_check_mark: emoji and remove :hourglass_flowing_sand: emoji (use Slack MCP tool in sub-agents)
 2. **Leave Unresolved Messages**: No action needed
@@ -171,10 +171,10 @@ BATCH SUMMARY:
 
 ## Key Principles
 
-1. **Batch Processing**: Process up to 10 messages per batch, get confirmation, execute, then move to next batch
+1. **Batch Processing**: Process up to 10 messages per batch, execute actions, then move to next batch
 2. **Sub-Agent MCP Calls**: All Slack and Airtable MCP tool calls must be made in sub-agents to manage context better
 3. **Parallel Analysis**: Process up to 10 messages in parallel within each batch using sub-agents
-4. **Per-Batch Confirmation**: Get approval for each batch's actions before executing
+4. **Automatic Execution**: Execute batch actions automatically after generating summary
 5. **Specific Resolution**: Look for evidence the SPECIFIC problem was addressed, not just PM awareness
 6. **No New Messages**: This is purely tracking/completion - don't send new PM messages
 7. **Context Management**: Using sub-agents for MCP calls prevents context window overflow
@@ -187,7 +187,6 @@ Batch 1 (Messages 1-10):
   - Each sub-agent analyzes one message using MCP tools
   - Collect results: 7 resolved, 3 unresolved
   - Show summary to user
-  - Get confirmation
   - Execute: Mark 7 messages as complete
   - Move to Batch 2
 
