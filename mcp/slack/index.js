@@ -83,6 +83,28 @@ const addReactionTool = {
         required: ["channel_id", "timestamp", "reaction"],
     },
 };
+const removeReactionTool = {
+    name: "slack_remove_reaction",
+    description: "Remove a reaction emoji from a message",
+    inputSchema: {
+        type: "object",
+        properties: {
+            channel_id: {
+                type: "string",
+                description: "The ID of the channel containing the message",
+            },
+            timestamp: {
+                type: "string",
+                description: "The timestamp of the message to remove reaction from",
+            },
+            reaction: {
+                type: "string",
+                description: "The name of the emoji reaction to remove (without ::)",
+            },
+        },
+        required: ["channel_id", "timestamp", "reaction"],
+    },
+};
 const getChannelHistoryTool = {
     name: "slack_get_channel_history",
     description: "Get recent messages from a channel or a specific message by timestamp",
@@ -291,6 +313,18 @@ class SlackClient {
         });
         return response.json();
     }
+    async removeReaction(channel_id, timestamp, reaction) {
+        const response = await fetch("https://slack.com/api/reactions.remove", {
+            method: "POST",
+            headers: this.botHeaders,
+            body: JSON.stringify({
+                channel: channel_id,
+                timestamp: timestamp,
+                name: reaction,
+            }),
+        });
+        return response.json();
+    }
     async getChannelHistory(channel_id, limit = 10, latest = undefined, oldest = undefined, inclusive = false) {
         const params = new URLSearchParams({
             channel: channel_id,
@@ -439,6 +473,16 @@ async function main() {
                         content: [{ type: "text", text: JSON.stringify(response) }],
                     };
                 }
+                case "slack_remove_reaction": {
+                    const args = request.params.arguments;
+                    if (!args.channel_id || !args.timestamp || !args.reaction) {
+                        throw new Error("Missing required arguments: channel_id, timestamp, and reaction");
+                    }
+                    const response = await slackClient.removeReaction(args.channel_id, args.timestamp, args.reaction);
+                    return {
+                        content: [{ type: "text", text: JSON.stringify(response) }],
+                    };
+                }
                 case "slack_get_channel_history": {
                     const args = request.params
                         .arguments;
@@ -537,6 +581,7 @@ async function main() {
                 postMessageTool,
                 replyToThreadTool,
                 addReactionTool,
+                removeReactionTool,
                 getChannelHistoryTool,
                 getThreadRepliesTool,
                 getUsersTool,
