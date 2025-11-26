@@ -28,6 +28,12 @@ Quick reference for constant values used in auto-management workflows.
 - **Required Emoji Pattern**: `:eyes:` + `:hourglass_flowing_sand:` - `:white_check_mark:`
 - **Airtable Bot User**: `U03E50KUNN5`
 
+### Weekly Status Update Check
+- **Lookback Period**: 5 calendar days
+- **Batch Size**: 10 channels
+- **Search Terms**: "Weekly Status", "weekly status"
+- **Message Template**: `<@PM_SLACK_ID> please post your weekly status update when you get a chance. thanks`
+
 ## Usage
 
-These constants should be used consistently across both auto-management skills to avoid hardcoding values.
+These constants should be used consistently across all management skills to avoid hardcoding values.
