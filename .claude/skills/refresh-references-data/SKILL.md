@@ -10,14 +10,14 @@ Update cached reference files by dynamically querying Airtable and Slack MCP too
 
 This skill REFRESHES the following reference files:
 
-- **Slack Channels**: `../references/slack-channels.md` - Project code to channel ID mappings
-- **Project Managers**: `../references/project-managers.md` - PM names and Slack IDs
-- **Active Clients**: `../references/active-clients.md` - Active clients to project code mappings
+- **Slack Channels**: `../../../references/slack-channels.md` - Project code to channel ID mappings
+- **Project Managers**: `../../../references/project-managers.md` - PM names and Slack IDs
+- **Active Clients**: `../../../references/active-clients.md` - Active clients to project code mappings
 
 **Not Refreshed** (static configuration):
 
-- **Airtable Structure**: `../references/airtable-structure.md` - Base, table, and field IDs
-- **Constants**: `../references/constants.md` - Bot IDs, channel IDs, constants
+- **Airtable Structure**: `../../../references/airtable-structure.md` - Base, table, and field IDs
+- **Constants**: `../../../references/constants.md` - Bot IDs, channel IDs, constants
 
 ## When to Use This Skill
 
@@ -118,9 +118,9 @@ The sub-agent should:
 
 Read and parse the current content of:
 
-- `../references/slack-channels.md` - Extract current channel mappings
-- `../references/project-managers.md` - Extract current PM data
-- `../references/active-clients.md` - Extract current active client data (may not exist yet)
+- `../../../references/slack-channels.md` - Extract current channel mappings
+- `../../../references/project-managers.md` - Extract current PM data
+- `../../../references/active-clients.md` - Extract current active client data (may not exist yet)
 
 ## Step 3: Generate Diff Summary
 

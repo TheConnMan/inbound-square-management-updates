@@ -10,10 +10,10 @@ Review content development channels for active clients and identify those missin
 
 **IMPORTANT**: Use these shared reference files to avoid redundant MCP lookups:
 
-- **Active Clients**: `../references/active-clients.md` - Active clients to project code/channel mappings
-- **Slack Channels**: `../references/slack-channels.md` - Project code to channel ID mappings
-- **Project Managers**: `../references/project-managers.md` - PM names and Slack IDs
-- **Constants**: `../references/constants.md` - Bot IDs, channel IDs, constants
+- **Active Clients**: `../../../references/active-clients.md` - Active clients to project code/channel mappings
+- **Slack Channels**: `../../../references/slack-channels.md` - Project code to channel ID mappings
+- **Project Managers**: `../../../references/project-managers.md` - PM names and Slack IDs
+- **Constants**: `../../../references/constants.md` - Bot IDs, channel IDs, constants
 
 Instead of querying Airtable or Slack for basic lookups, consult these references first.
 
@@ -36,7 +36,7 @@ Use this skill when:
 
 ## Process Overview
 
-1. Read active clients from `../references/active-clients.md`
+1. Read active clients from `../../../references/active-clients.md`
 2. Process channels in batches of up to 10 at a time using sub-agents
 3. For each batch: search for "Weekly Status" messages in last 5 calendar days
 4. Generate summary report identifying missing status updates
@@ -48,7 +48,7 @@ Use this skill when:
 
 ## Step 1: Load Active Clients
 
-Read `../references/active-clients.md` to get list of:
+Read `../../../references/active-clients.md` to get list of:
 
 - Client names
 - Project codes
@@ -116,7 +116,7 @@ Each sub-agent should:
 
 3. **Look Up PM Slack ID**:
    - Use PM name from active-clients.md
-   - Look up Slack ID from `../references/project-managers.md`
+   - Look up Slack ID from `../../../references/project-managers.md`
    - Format: `<@SLACK_ID>` for Slack mentions
 
 4. **Return Results**:
@@ -234,7 +234,7 @@ Check complete. All PMs have been notified.
 
 ## PM Slack ID Lookup
 
-Use the PM Slack IDs from `../references/project-managers.md`:
+Use the PM Slack IDs from `../../../references/project-managers.md`:
 
 | Name | Slack ID |
 |------|----------|
@@ -274,7 +274,7 @@ Search for both capitalized and lowercase versions to catch all variations.
 
 ## Refresh Check
 
-Before running this skill, verify `../references/active-clients.md` exists and is up to date.
+Before running this skill, verify `../../../references/active-clients.md` exists and is up to date.
 
 If file is missing or user wants fresh data, recommend:
 ```

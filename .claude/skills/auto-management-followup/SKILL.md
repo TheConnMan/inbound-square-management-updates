@@ -10,10 +10,10 @@ Review Airtable bot messages in `#auto-management` that have been acted upon and
 
 **IMPORTANT**: Use these shared reference files to avoid redundant MCP lookups:
 
-- **Slack Channels**: `../references/slack-channels.md` - Project code to channel ID mappings
-- **Project Managers**: `../references/project-managers.md` - PM names and Slack IDs
-- **Airtable Structure**: `../references/airtable-structure.md` - Base, table, and field IDs
-- **Constants**: `../references/constants.md` - Bot IDs, channel IDs, constants
+- **Slack Channels**: `../../../references/slack-channels.md` - Project code to channel ID mappings
+- **Project Managers**: `../../../references/project-managers.md` - PM names and Slack IDs
+- **Airtable Structure**: `../../../references/airtable-structure.md` - Base, table, and field IDs
+- **Constants**: `../../../references/constants.md` - Bot IDs, channel IDs, constants
 
 Instead of searching for channel IDs or PM user IDs, consult these references first.
 
