@@ -55,6 +55,10 @@ Read `../../../references/active-clients.md` to get list of:
 - Channel IDs
 - PM assignments
 
+**EXCLUSIONS**:
+- **ALWAYS exclude ISQ channel (C06USGK8JQZ) and Bob Farzami from all checks and notifications**
+- Filter out ISQ from the active clients list before processing
+
 **If file doesn't exist or seems empty**: Instruct user to run `/refresh-references` first.
 
 Example data structure:
@@ -83,40 +87,53 @@ Use YYYY-MM-DD format for Slack search queries.
 
 For each batch of up to 10 channels:
 
-### 3.1 Parallel Channel Search (Using Sub-Agents)
+### 3.1 Parallel Channel Analysis (Using Sub-Agents)
 
 **Create a sub-agent for each channel in the batch (up to 10 parallel sub-agents).**
 
 Each sub-agent should:
 
-1. **Search Channel for Weekly Status** (using MCP tools in sub-agent):
+1. **Fetch Channel History** (using MCP tools in sub-agent):
 
-   Use `mcp__slack__slack_search_messages`:
+   Use `mcp__slack__slack_get_channel_history` to get all messages from the last 5 days:
    ```
-   query: "Weekly Status" in:#<channel-name> after:<5-days-ago>
-   sort: timestamp
-   sort_dir: desc
-   ```
-
-   **Alternative search** (case insensitive):
-   ```
-   query: "weekly status" in:#<channel-name> after:<5-days-ago>
+   channel_id: <channel-id>
+   oldest: <timestamp-5-days-ago>
+   limit: 100
    ```
 
-2. **Determine Status**:
+   Convert the date (5 days ago) to Unix timestamp format for the API.
+
+2. **Evaluate Messages for Status Updates**:
+
+   Review ALL messages from the PM in the channel history. A message counts as a status update if it:
+
+   - Contains project/work updates, progress reports, or summaries
+   - Includes information about articles, tasks, or deliverables
+   - Has phrases like "Weekly Status", "Weekly Update", "Status", "Update", "Week of", etc.
+   - Is a substantial update from the PM (not just a quick response or bot message)
+
+   **Ignore**:
+   - Bot messages
+   - Simple acknowledgments or short replies
+   - Messages from other team members
+   - Check-in responses without substantial updates
+
+3. **Determine Status**:
 
    **HAS STATUS UPDATE**:
-   - Found at least one "Weekly Status" or "weekly status" message within last 5 days
-   - Extract date of most recent status post
+   - Found at least one qualifying status update message from the PM within last 5 days
+   - Extract date of most recent status update
    - Action: No action needed
 
    **MISSING STATUS UPDATE**:
-   - No "Weekly Status" message found in last 5 days
+   - No qualifying status update found in last 5 days
    - Action: Recommend PM notification
 
 3. **Look Up PM Slack ID**:
    - Use PM name from active-clients.md
    - Look up Slack ID from `../../../references/project-managers.md`
+   - Filter channel messages to only evaluate messages from this PM's Slack ID
    - Format: `<@SLACK_ID>` for Slack mentions
 
 4. **Return Results**:
@@ -244,22 +261,24 @@ Use the PM Slack IDs from `../../../references/project-managers.md`:
 | Jahanzeb Arshad | U09HHEEP5CG |
 | James Selvage | U0575FNHUG3 |
 
-## Search Query Examples
+## Message Evaluation Guidelines
 
-**Slack search syntax:**
+**What qualifies as a status update:**
+- Contains project progress, work summaries, or deliverable updates
+- Discusses articles, tasks, client feedback, or team activities
+- Provides overview of current state or recent accomplishments
+- Common indicators: "Weekly Status", "Weekly Update", "Update", "Status", bullet lists with project details
 
-```
-"Weekly Status" in:#cp-content-development after:2025-11-21
-"weekly status" in:#nx-content-development after:2025-11-21
-```
+**What does NOT qualify:**
+- Bot-generated messages or automated reminders
+- Brief acknowledgments ("ok", "thanks", "will do")
+- Questions without substantial context
+- Messages from non-PM team members
+- Short tactical responses in threads
 
-**Case variations to consider:**
-- "Weekly Status"
-- "weekly status"
-- "Weekly Status Update"
-- "weekly status update"
-
-Search for both capitalized and lowercase versions to catch all variations.
+**Timestamp conversion:**
+For `oldest` parameter in channel history API, convert date to Unix timestamp:
+- Example: 2025-11-22 → 1731974400 (seconds since epoch)
 
 ## Execution Notes
 
@@ -268,9 +287,11 @@ Search for both capitalized and lowercase versions to catch all variations.
 - **Parallel Analysis**: Process up to 10 channels in parallel within each batch using sub-agents
 - **Per-Batch Confirmation**: Get approval for each batch's actions before executing
 - **5 Calendar Day Window**: Always calculate from today's date, not business days
-- **Case Insensitive Search**: Search for both "Weekly Status" and "weekly status"
+- **Message Evaluation**: Fetch full channel history and evaluate all PM messages, don't rely on keyword searches
 - **PM Slack ID Translation**: Use proper Slack mention format (<@SLACK_ID>) for all PMs
 - **Reference Files First**: Always read reference files before making MCP calls
+- **ISQ Exclusion**: NEVER check ISQ channel or notify Bob Farzami
+- **Timestamp Format**: Convert dates to Unix timestamps for channel history API calls
 
 ## Refresh Check
 
