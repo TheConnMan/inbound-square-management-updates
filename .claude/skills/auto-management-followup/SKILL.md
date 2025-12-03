@@ -48,20 +48,39 @@ Use this skill when:
 
 ## Step 1: Search for Candidate Messages
 
-Use Slack search (via MCP tool in sub-agent) to find messages with the required emoji pattern:
+Use Slack search (via MCP tool in sub-agent) to find messages with the required emoji pattern.
+
+**IMPORTANT**: Use this EXACT search query format.
+
+### Calculate Date Filter
+
+First, calculate the date 14 days ago from today (use current date from system context).
+
+### Execute Search
+
+Use `mcp__slack__slack_search_messages` with these EXACT parameters:
 
 ```
-Search Query: "in:#auto-management has::eyes: has::hourglass_flowing_sand: after:<14 days ago>"
-Count: 100 (to get all candidates, then process in batches)
-Sort: timestamp (newest first)
+query: "in:#auto-management from:@Airtable has::eyes: has::hourglass_flowing_sand: after:YYYY-MM-DD"
+count: 100
+sort: "timestamp"
+sort_dir: "desc"
 ```
 
-Filter results to identify messages that:
+Replace `YYYY-MM-DD` with the calculated date (e.g., `after:2025-11-19`).
 
-- Have :eyes: emoji ✅
-- Have :hourglass_flowing_sand: emoji ✅
-- Do NOT have :white_check_mark: emoji ❌
-- Are from Airtable bot (U03E50KUNN5)
+**Key Points:**
+- Use `from:@Airtable` (display name), NOT `from:@U03E50KUNN5` (user ID) - user IDs don't work in Slack search
+- The emoji filters will exclude messages that already have :white_check_mark:
+- This query returns only Airtable bot messages with the required emoji pattern
+
+### Filter Results After Search
+
+After receiving search results, verify messages have:
+
+- :eyes: emoji ✅
+- :hourglass_flowing_sand: emoji ✅
+- NO :white_check_mark: emoji ❌
 
 If no results, exit - nothing to review.
 
