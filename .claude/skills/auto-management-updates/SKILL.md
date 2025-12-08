@@ -94,10 +94,6 @@ Each sub-agent should:
    - No evidence of resolution, PM action required
    - Action: Send PM message + add :eyes: and :hourglass_flowing_sand: emojis + post link in thread
 
-   **SKIP (Monday only)**:
-   - 3-day overdue messages
-   - Action: None (see Monday Special Handling section)
-
 4. **Return Results**: Each sub-agent returns its analysis and recommended actions
 
 **Important**: All Slack and Airtable MCP tool calls must be made within the sub-agents, not in the main agent context.
@@ -124,9 +120,6 @@ PM MESSAGES TO SEND:
    Message: [@PM Name] [specific action needed for article]
    Auto-Management Thread: [message link]
 
-SKIPPED (Monday 3-day overdue):
-- [Article Title] - [Project] - [Reason]
-
 BATCH SUMMARY:
 - Resolved: X messages
 - PM Messages: X messages
@@ -145,31 +138,6 @@ BATCH SUMMARY:
 3. **Post Thread Links**: After each PM message, post the message link in the auto-management thread (use Slack MCP tool in sub-agents)
 
 **After completing this batch, move to the next batch of up to 10 messages and repeat Steps 2-4 until all messages are processed.**
-
-## Monday Special Handling
-
-**When running on Mondays:**
-
-### Skip 3-Day Overdue Messages
-
-- **Identify**: Messages containing "3 day overdue" or "3 days overdue"
-- **Action**: Skip entirely (no emojis, no PM messages, no follow-up)
-- **Rationale**: 3-day period includes weekend days, not actionable overdue items
-
-### Examples of Monday Skips
-
-**Skip these on Monday:**
-
-- "Draft was due 3 days ago"
-- "Waiting on author updates for 3 days"
-- "Peer reviewer needed - 3 days overdue"
-
-**Still process on Monday:**
-
-- "Draft was due 4 days ago"
-- "Waiting on author updates for 5 days"
-- "Needs peer reviewer" (no time component)
-- "Graphics needed"
 
 ## Resolution Evidence Examples
 
