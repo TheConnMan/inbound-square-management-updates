@@ -34,7 +34,7 @@ Use this skill when:
 
 ## Process Overview
 
-1. Search for Airtable bot messages from the last 14 days in `#auto-management` (C03MBDE9CM8) that have:
+1. Search for Airtable bot messages from the last 60 days in `#auto-management` (C03MBDE9CM8) that have:
    - ✅ :eyes: and :hourglass_flowing_sand: emojis (reviewed and acted upon)
    - ❌ NO :white_check_mark: emoji (not yet marked complete)
 2. Process messages in batches of up to 10 at a time using sub-agents
@@ -54,7 +54,7 @@ Use Slack search (via MCP tool in sub-agent) to find messages with the required 
 
 ### Calculate Date Filter
 
-First, calculate the date 14 days ago from today (use current date from system context).
+First, calculate the date 60 days ago from today (use current date from system context).
 
 ### Execute Search
 
