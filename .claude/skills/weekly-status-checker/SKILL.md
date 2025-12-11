@@ -46,6 +46,26 @@ Use this skill when:
 **Critical: Always get confirmation before sending any Slack messages.**
 **Critical: All MCP calls (Slack, Airtable) must be made in sub-agents to manage context better.**
 
+## IMPORTANT: Top-Level Agent Role
+
+**THE TOP-LEVEL AGENT (YOU) MUST ONLY COORDINATE. DO NOT DO THE WORK YOURSELF.**
+
+Your role as the top-level agent:
+- Read reference files to get the list of channels
+- Calculate the date range
+- Launch sub-agents in batches
+- Collect and synthesize sub-agent results
+- Present summaries to the user
+- Get user confirmation
+- Report completion
+
+**DELEGATE ALL ACTUAL WORK TO SUB-AGENTS:**
+- Each channel's analysis MUST be done by a separate sub-agent
+- All Slack MCP calls MUST be made in sub-agents
+- All message evaluation MUST be done in sub-agents
+- You should NEVER directly call Slack MCP tools yourself
+- Use the Task tool with `subagent_type='general-purpose'` to create sub-agents for each channel
+
 ## Step 1: Load Active Clients
 
 Read `../../../references/active-clients.md` to get list of:
@@ -89,7 +109,17 @@ For each batch of up to 10 channels:
 
 ### 3.1 Parallel Channel Analysis (Using Sub-Agents)
 
-**Create a sub-agent for each channel in the batch (up to 10 parallel sub-agents).**
+**YOU (TOP-LEVEL AGENT) MUST LAUNCH SUB-AGENTS FOR EACH CHANNEL.**
+
+**DO NOT DO THIS WORK YOURSELF. Launch one general-purpose sub-agent per channel.**
+
+For each channel in the batch, launch a sub-agent with the Task tool:
+```
+Task tool with subagent_type='general-purpose'
+Prompt: "Analyze channel {channel_id} for {client_name} ({project_code}) to check if PM {pm_name} has posted a weekly status update since {date_5_days_ago}..."
+```
+
+**Launch all sub-agents for the batch in parallel (up to 10 at once) by making multiple Task tool calls in a single message.**
 
 Each sub-agent should:
 
@@ -199,7 +229,19 @@ BATCH SUMMARY:
 
 **Wait for user confirmation for this batch**, then execute all actions for this batch:
 
-1. **Send PM Reminder Messages**: Post each reminder message to the specified content development channel (use Slack MCP tool in sub-agents)
+1. **Send PM Reminder Messages**:
+
+**YOU (TOP-LEVEL AGENT) MUST DELEGATE MESSAGE SENDING TO SUB-AGENTS.**
+
+**DO NOT call Slack MCP tools yourself. Launch sub-agents to send the messages.**
+
+For each message that needs to be sent, launch a sub-agent:
+```
+Task tool with subagent_type='general-purpose'
+Prompt: "Send a message to channel {channel_id}: <@{pm_slack_id}> please post your weekly status update when you get a chance. thanks"
+```
+
+**You can launch multiple sub-agents in parallel to send multiple messages at once.**
 
 **Message template:**
 ```
@@ -208,12 +250,12 @@ BATCH SUMMARY:
 
 **Example execution:**
 ```
-Sending messages:
-1. #nx-content-development: <@U07PRTGJ9S5> please post your weekly status update when you get a chance. thanks
-2. #ss-content-development: <@U07PRTGJ9S5> please post your weekly status update when you get a chance. thanks
-3. #sw-content-development: <@U04HDE1NVCP> please post your weekly status update when you get a chance. thanks
+Launching sub-agents to send messages:
+1. Sub-agent for #nx-content-development: <@U07PRTGJ9S5> please post your weekly status update when you get a chance. thanks
+2. Sub-agent for #ss-content-development: <@U07PRTGJ9S5> please post your weekly status update when you get a chance. thanks
+3. Sub-agent for #sw-content-development: <@U04HDE1NVCP> please post your weekly status update when you get a chance. thanks
 
-Messages sent successfully: 3
+All sub-agents completed. Messages sent successfully: 3
 ```
 
 **After completing this batch, move to the next batch of up to 10 channels and repeat Steps 3-5 until all channels are processed.**
@@ -282,14 +324,17 @@ For `oldest` parameter in channel history API, convert date to Unix timestamp:
 
 ## Execution Notes
 
+- **Top-Level Agent Role**: ONLY coordinate, synthesize, and present results. NEVER do the actual work yourself
+- **Delegation Required**: Launch sub-agents for ALL channel analysis and message sending
 - **Batch Processing**: Process up to 10 channels per batch, get confirmation, execute, then move to next batch
 - **Sub-Agent MCP Calls**: All Slack MCP tool calls must be made in sub-agents to manage context better
+- **Parallel Sub-Agent Launch**: Launch all sub-agents for a batch in parallel (multiple Task tool calls in one message)
 - **Parallel Analysis**: Process up to 10 channels in parallel within each batch using sub-agents
 - **Per-Batch Confirmation**: Get approval for each batch's actions before executing
 - **5 Calendar Day Window**: Always calculate from today's date, not business days
 - **Message Evaluation**: Fetch full channel history and evaluate all PM messages, don't rely on keyword searches
 - **PM Slack ID Translation**: Use proper Slack mention format (<@SLACK_ID>) for all PMs
-- **Reference Files First**: Always read reference files before making MCP calls
+- **Reference Files First**: Always read reference files before making MCP calls (top-level agent can do this)
 - **ISQ Exclusion**: NEVER check ISQ channel or notify Bob Farzami
 - **Timestamp Format**: Convert dates to Unix timestamps for channel history API calls
 

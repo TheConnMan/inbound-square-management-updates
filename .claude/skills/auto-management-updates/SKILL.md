@@ -82,15 +82,19 @@ Each sub-agent should:
 
 2. **Check for Resolution** (using MCP tools in sub-agent):
    - Look for project updates within last 7 days in content development channel (use Slack MCP tool)
+   - Check the current Stage field in Airtable (this is the source of truth)
    - Determine if the SPECIFIC PROBLEM is RESOLVED (not just acknowledged)
+   - **CRITICAL**: Follow the "Publication Verification Guidelines" section below when determining resolution status
 
 3. **Categorize Action**:
 
    **RESOLVED**:
-   - Evidence shows specific issue is fixed
+   - Article Stage in Airtable has progressed PAST the blocking stage
+   - Evidence shows specific issue is fixed (both Airtable stage AND channel evidence)
    - Action: Add :eyes: and :white_check_mark: emojis
 
    **NEEDS PM MESSAGE**:
+   - Article Stage is still in the blocking stage (stuck in review)
    - No evidence of resolution, PM action required
    - Action: Send PM message + add :eyes: and :hourglass_flowing_sand: emojis + post link in thread
 
@@ -147,15 +151,85 @@ BATCH SUMMARY:
 - "Waiting on author updates for X days" → Evidence author provided updates OR article moved forward
 - "Needs peer reviewer" → Evidence peer reviewer was assigned (Airtable record)
 
+## Publication Verification Guidelines
+
+**CRITICAL: Be extremely cautious when determining if an article is published.**
+
+### Source of Truth for Workflow Status
+
+The Airtable **Stage** field is the authoritative source for where an article is in the workflow, NOT the presence of a URL in the "Article Published Link" field.
+
+### When to Mark as RESOLVED vs NEEDS PM MESSAGE
+
+**ONLY mark as RESOLVED if:**
+1. The article's current Stage in Airtable has progressed PAST the blocking stage mentioned in the alert
+2. There is clear evidence in the Slack channel that the specific issue has been addressed
+3. Both Airtable stage AND channel evidence confirm resolution
+
+**ALWAYS mark as NEEDS PM MESSAGE if:**
+1. The article Stage is still in the blocking stage (e.g., "Needs Manager Draft Review")
+2. The article has been in the blocking stage for multiple days without updates
+3. You cannot find clear evidence that the PM has addressed the specific issue
+
+### Common Pitfall: URL Fields
+
+**WARNING: The presence of a URL in "Article Published Link" field does NOT mean the article is published.**
+
+- This field often contains TARGET URLs or PLANNED URLs before publication
+- Client-published articles may have URLs set up before content is actually live
+- The Stage field must show a published/live status for the article to be truly published
+
+### Verification Checklist
+
+Before marking any article as RESOLVED, verify ALL of the following:
+
+1. Current Airtable Stage is PAST the blocking stage (not stuck in review)
+2. Last Stage Change date is recent (within 1-2 days of the alert)
+3. Slack channel shows explicit evidence the issue was addressed
+4. If claiming "published," the Stage field must indicate publication stage (not review stage)
+
+### Example Scenarios
+
+**INCORRECT - Do NOT mark as resolved:**
+- Stage: "Needs Manager Draft Review" (since Nov 26)
+- Article Published Link: https://example.com/article
+- Reasoning: Stage shows stuck in review, URL doesn't prove it's live
+
+**CORRECT - Mark as NEEDS PM MESSAGE:**
+- Stage: "Needs Manager Draft Review" (since Nov 26)
+- No recent stage changes
+- Action: PM needs to complete the review or update status
+
+**CORRECT - Mark as RESOLVED:**
+- Stage: "Published" or "Live"
+- Article Published Link: https://example.com/article
+- Recent stage change showing progression
+- Evidence in channel of publication
+
 ## Message Templates
 
-Examples of PM messages to send:
+**IMPORTANT: Keep messages short and actionable. Main goal is for PMs to follow up with the article.**
+
+Format: `@[PM Mention] please [specific action] for/on [article-title] ([brief context/urgency])`
+
+Examples:
 
 ```
-@[PM Name] please line up graphics for `article-title`
-@[PM Name] please add the peer reviewer for `article-title`
-@[PM Name] are you still waiting on the author for `article-title`?
+@PM please complete the manager editing approval for `article-title` (waiting 4 days)
+@PM please follow up with [Author Name] on `article-title` peer review updates (waiting since Dec 2, invoice due Dec 13)
+@PM please get status update from [Editor Name] on `article-title` editing (waiting 10+ days)
+@PM please review if all 6 graphics are necessary for `article-title` before final approval
+@PM please follow up with author on overdue `article-title` draft (due Dec 4)
+@PM please line up graphics for `article-title`
+@PM please add the peer reviewer for `article-title`
 ```
+
+**Key principles:**
+- Start with PM mention using their Slack ID
+- Use "please [verb]" for clear action
+- Include article title in backticks
+- Add brief context in parentheses only if it adds urgency/clarity
+- Keep total message under 20 words when possible
 
 Use proper Slack mention format with PM's Slack ID from project managers directory.
 
